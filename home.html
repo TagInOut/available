@@ -1,27 +1,57 @@
-<h1>hello</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load JSON Files</title>
+</head>
+<body>
 
-<script>
-async function scrapeGithubRepo(user, repo) {
-    const url = `https://github.com/${user}/${repo}`;
+<h1>Installations</h1>
+<div id="json-content"></div>
+
+</body>
+</html>
     
-    try {
-        const response = await fetch(url);
-        const text = await response.text();
-
-      console.log(text)
-
-        // Extract potential file links ending with .html
-        const matches = [...text.matchAll(/href="\/.*?\/.*?\/blob\/.*?\/(.*?\.html)"/g)];
-        const files = matches.map(match => match[1]);
-
-        console.log("✅ Found HTML files:", files);
-        return files;
-    } catch (error) {
-        console.error("❌ Error scraping GitHub:", error);
+<script>
+    // Function to fetch a JSON file and display its content
+    async function fetchAndDisplayJSON(filename) {
+        try {
+            const response = await fetch(`installations/${filename}.json`);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching the JSON file:', error);
+        }
     }
-}
 
-scrapeGithubRepo("TagInOut", "available-installations-bgm");
+    // Function to read the list.json and fetch each file based on the array
+    async function loadInstallations() {
+        try {
+            const listResponse = await fetch('list.json');
+            const listData = await listResponse.json();
 
-  
+            // Container to display the content
+            const contentDiv = document.getElementById('json-content');
+            contentDiv.innerHTML = '';  // Clear any existing content
+
+            // Loop through each file name in the array
+            for (let file of listData) {
+                const jsonData = await fetchAndDisplayJSON(file);
+                if (jsonData) {
+                    const jsonDisplay = document.createElement('div');
+                    jsonDisplay.innerHTML = `
+                        <h3>${file}</h3>
+                        <pre>${JSON.stringify(jsonData, null, 2)}</pre>
+                    `;
+                    contentDiv.appendChild(jsonDisplay);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching list.json:', error);
+        }
+    }
+
+    // Call the function to load the installations
+    loadInstallations();
 </script>
