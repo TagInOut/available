@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Load JSON Files</title>
 </head>
+<style>
+    .capitalize {
+        text-transform:capitalize;
+    }
+    
+</style>
+    
 <body>
 
 <h1>Installations</h1>
@@ -32,16 +39,19 @@
             const listData = await listResponse.json();
 
             // Container to display the content
-            const contentDiv = document.getElementById('json-content');
+            const contentDiv = document.querySelector('#json-content');
             contentDiv.innerHTML = '';  // Clear any existing content
 
             // Loop through each file name in the array
             for (let file of listData) {
                 const jsonData = await fetchAndDisplayJSON(file);
                 if (jsonData) {
+                    console.log(jsonData)
+
+                    
                     const jsonDisplay = document.createElement('div');
                     jsonDisplay.innerHTML = `
-                        <h3>${file}</h3>
+                        <h3 class="capitalize">${file}</h3>
                         <pre>${JSON.stringify(jsonData, null, 2)}</pre>
                     `;
                     contentDiv.appendChild(jsonDisplay);
