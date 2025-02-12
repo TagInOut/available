@@ -106,6 +106,7 @@
 
     (async function() {
         const responseForList = await fetch('list.json', {
+            method: 'POST',
             headers: {
             'Content-Type': 'application/json',
             'cache': 'no-cache'}
