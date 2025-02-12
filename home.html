@@ -3,65 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Load JSON Files</title>
+    <title>Load Tag In/Out</title>
 </head>
 <style>
+    html {
+        background: linear-gradient(rgba(0,0,0,0.9),black);
+        font-family: arial;
+        height:100vh;
+        width:100vw;
+    }
+
+    #app-content {
+        display: grid;
+        color:white;
+        grid-template-columns: 1fr 1fr;
+        justify-content: center;
+        column-gap: 60px;
+    }
+
     .capitalize {
-        text-transform:capitalize;
+        text-transform: capitalize;
+    }
+
+    h1 {
+        color:white;
+    }
+
+    .allLocations {
+        justify-self: center;
+    }
+
+    .locations {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        column-gap: 10px;
+        grid-auto-rows:250px;
+    }
+
+    .install {
+        background: linear-gradient(rgba(0,0,0,0.7),rgba(255,255,255,0.3));
+        border:1px solid white;
+        border-radius:5px;
+        box-sizing: border-box;
+        padding: 5px;
+        margin-top:5px;
+        padding-bottom:15px;
+        width: 100%;
+        position:relative;
+    }
+
+    .install > h3 {
+        text-align: center;
+    }
+
+    .install-link {
+        box-sizing: border-box;
+        color:white;
+        background:linear-gradient(rgb(255,0,0),black);
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+        font-size: 18px;
+        padding-top:5px;
+        padding-bottom:5px;
+        left:2px;
+        width: calc(100% - 4px);
+        margin:auto;
+        position:absolute;
+        bottom:5px;
+    }
+
+    .install-link:hover {
+        filter:brightness(150%);
+        transition:all 0.3s;
+    }
+
+    h1,h2 {
+        text-align:center;
+    }
+
+    @media (max-width: 900px) {
+        .locations {
+            grid-template-columns: repeat(1, 1fr);
+        }
     }
     
 </style>
-    
+
 <body>
-
-<h1>Installations</h1>
-<div id="json-content"></div>
-
+    <h1>Tag In/Out</h1>
+    <div id="app-content"></div>
 </body>
 </html>
-    
+
 <script>
-    // Function to fetch a JSON file and display its content
-    async function fetchAndDisplayJSON(filename) {
-        try {
-            const response = await fetch(`installations/${filename}.json`);
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error fetching the JSON file:', error);
-        }
-    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(error => console.log('Service Worker registration failed:', error));
+    };
 
-    // Function to read the list.json and fetch each file based on the array
-    async function loadInstallations() {
-        try {
-            const listResponse = await fetch('list.json');
-            const listData = await listResponse.json();
-
-            // Container to display the content
-            const contentDiv = document.querySelector('#json-content');
-            contentDiv.innerHTML = '';  // Clear any existing content
-
-            // Loop through each file name in the array
-            for (let file of listData) {
-                const jsonData = await fetchAndDisplayJSON(file);
-                if (jsonData) {
-                    console.log(jsonData)
-
-                    
-                    const jsonDisplay = document.createElement('div');
-                    jsonDisplay.innerHTML = `
-                        <h3 class="capitalize">${file}</h3>
-                        <pre>${JSON.stringify(jsonData, null, 2)}</pre>
-                    `;
-                    contentDiv.appendChild(jsonDisplay);
+    (async function() {
+        const responseForList = await fetch('list.json', {
+            headers: {
+            'Content-Type': 'application/json',
+            'cache': 'no-cache'}
+        });
+        const listOfFiles = await responseForList.json();
+        let installs = await Promise.all(listOfFiles.map(async (fileName) => {
+            const response = await fetch(`installations/${fileName}.json`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'cache': 'no-cache'
                 }
-            }
-        } catch (error) {
-            console.error('Error fetching list.json:', error);
-        }
-    }
+            });
+            return response.json(); // Directly return the JSON data
+        }));
+        let listOfLocations = new Set(installs.map(obj => obj.location))
+        listOfLocations = [...listOfLocations].sort((a,b) => {return a.toLowerCase() > b.toLowerCase()})
+        let installsAsGroup = {}
+        listOfLocations.forEach(location => {
+            installsAsGroup[location] = []})
+        installs.forEach(obj => {
+            installsAsGroup[obj.location].push(obj) 
+        })
+        listOfLocations.forEach(local => {
+            installsAsGroup[local].sort((a,b) => (a.valueOf < b.valueOf))
+        })
+        let container = document.querySelector('#app-content')
+        container.classList.add('app-content')
+        listOfLocations.forEach(location => {
+            let allLocations = document.createElement('div')
+            allLocations.classList.add('allLocations')
+            let locationContainer = document.createElement('div')
+            locationContainer.classList.add('locations')
+            let title = document.createElement('h2')
+            title.innerText = location
+            allLocations.appendChild(title)
+            installsAsGroup[location].forEach(obj => {
+                let container = document.createElement('div')
+                container.classList.add('install')
+                let content = `
+                <h3>${obj.name}</h3>
+                <h4>${obj.description}</h4>
+                <h4>Last Seen: ${obj.toLocaleString}
+                </h4>
+                <br>
+                <a class="install-link" href="http://${obj.link}" target="_blank">Open</a>
+                `
+                container.innerHTML = content
+                locationContainer.appendChild(container)
+            }) 
+            allLocations.appendChild(locationContainer)
+            container.appendChild(allLocations)
+        })  
+    })();
 
-    // Call the function to load the installations
-    loadInstallations();
+    
 </script>
