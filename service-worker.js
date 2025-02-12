@@ -1,9 +1,9 @@
 const CACHE_NAME = 'my-cache-v1';
 const URLS_TO_CACHE = [
-  '/', // Cache the homepage
-  'available//home.html', // Ensure this is cached
-  'available//list.json', // Example styles
-  'available//installations', // Example script
+  'available', // Cache the homepage
+  'available/home.html', // Ensure this is cached
+  'available/list.json', // Example styles
+  'available/installations', // Example script
 ];
 
 // Install event: Cache assets when the service worker is installed
