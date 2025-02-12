@@ -106,7 +106,7 @@
 
     (async function() {
         const responseForList = await fetch('list.json', {
-            method: 'POST',
+            method: 'GET',
             headers: {
             'Content-Type': 'application/json',
             'cache': 'no-cache'}
@@ -114,7 +114,7 @@
         const listOfFiles = await responseForList.json();
         let installs = await Promise.all(listOfFiles.map(async (fileName) => {
             const response = await fetch(`installations/${fileName}.json`, {
-                method: 'POST',
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'cache': 'no-cache'
