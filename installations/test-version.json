@@ -1,6 +1,8 @@
 {
-  "name":"test-version",
+  "name":"Logans Computer",
   "location":"QR",
   "link":"127.0.0.1:3001",
-  "description":"Test Version"
+  "description":"The computer in the lab",
+  "toLocaleString": "2/11/2025, 8:24:13 AM",
+  "valueOf":1739291228408
 }

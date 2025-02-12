@@ -1,0 +1,8 @@
+{
+  "name":"Logans Phone",
+  "location":"QR",
+  "link":"127.0.0.1:3001",
+  "description":"Logans phone with the app installed",
+  "toLocaleString": "2/11/2025, 8:33:00 AM",
+  "valueOf":1739291580119
+}
