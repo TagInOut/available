@@ -108,7 +108,7 @@
         const responseForList = await fetch('list.json', {
             method: 'GET',
             headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/html',
             'cache': 'no-cache'}
         });
         const listOfFiles = await responseForList.json();
@@ -116,7 +116,7 @@
             const response = await fetch(`installations/${fileName}.json`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'text/html',
                     'cache': 'no-cache'
                 }
             });
