@@ -107,17 +107,18 @@
     (async function() {
         const responseForList = await fetch('list.json', {
             method: 'GET',
+            cache : 'no-cache',
             headers: {
-            'Content-Type': 'text/html',
-            'cache': 'no-cache'}
+            'Content-Type': 'text/html'
+            }
         });
         const listOfFiles = await responseForList.json();
         let installs = await Promise.all(listOfFiles.map(async (fileName) => {
             const response = await fetch(`installations/${fileName}.json`, {
                 method: 'GET',
+                cache: 'no-cache',
                 headers: {
-                    'Content-Type': 'text/html',
-                    'cache': 'no-cache'
+                    'Content-Type': 'text/html'
                 }
             });
             return response.json(); // Directly return the JSON data
