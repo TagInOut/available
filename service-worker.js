@@ -1,32 +1,46 @@
-const CACHE_NAME = 'my-cache-v1';
+const CACHE_NAME = 'my-cache-v2';
 const URLS_TO_CACHE = [
-  '/', // Cache the homepage
-  '/home.html', // Ensure this is cached
-  '/list.json', // Example styles
-  '/installations', // Example script
+  'available/', 
+  'available/home.html', // Ensure correct path
 ];
 
-// Install event: Cache assets when the service worker is installed
+// Install event: Cache assets when service worker is installed
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(URLS_TO_CACHE);
+      return Promise.all(
+        URLS_TO_CACHE.map(url =>
+          fetch(url, { cache: "no-store" }) // Avoid caching errors
+            .then(response => {
+              if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+              return cache.put(url, response);
+            })
+            .catch(error => console.warn('Caching failed for', url, error))
+        )
+      );
     })
   );
 });
 
-// Fetch event: Serve cached content when offline
+// Fetch event: Serve from cache first, then update from network
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return; // Ignore non-GET requests (e.g., POST)
+
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request).then(networkResponse => {
-        return caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, networkResponse.clone()); // Update cache
-          return networkResponse;
-        });
+        // Only cache static assets (avoid caching API responses)
+        if (event.request.destination !== 'document') {
+          return caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
+        }
+        return networkResponse;
       });
     }).catch(() => {
-      return caches.match('/index.html'); // Fallback to cached page if offline
+      // If offline, return cached home.html as fallback
+      return caches.match('/home.html');
     })
   );
 });
